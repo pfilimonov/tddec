@@ -1,0 +1,8 @@
+0. Size of newly created buffer is equal to constructor argument
+1. Put element decrements available space by 1
+2. Take element increments available space by 1
+3. Add more than size elements doesn't change the available space from 0.
+4. Add more than size elements removes oldest elements.
+5. Take is going in reversed order to put.
+6. Get on empty buffer returns error.
+7. Too big size in constructor indicates an error.

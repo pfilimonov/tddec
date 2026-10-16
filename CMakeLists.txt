@@ -27,8 +27,23 @@ target_sources(Unity
       ${CMAKE_CURRENT_SOURCE_DIR}/unity/unity_memory.h
 )
 
+# warnings
+add_library(project_warnings INTERFACE)
+target_compile_options(project_warnings INTERFACE
+  -Wall -Wextra -Wpedantic
+  -Wshadow -Wconversion -Wsign-conversion
+  -Wcast-qual -Wcast-align
+  -Wformat=2 -Wnull-dereference
+  -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition
+  -Wundef -Wredundant-decls
+  -Werror
+)
+
 # CppUTest
 find_package(CppUTest)
 
+# subdirs
 add_subdirectory(ch2)
+add_subdirectory(led_driver)
+add_subdirectory(circular_buffer)
 
