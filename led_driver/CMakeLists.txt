@@ -7,6 +7,7 @@ target_sources(LedDriverTest
     all_tests.c
 
     led_driver.c
+    runtime_error_stub.c
 
   PUBLIC
     FILE_SET HEADERS
@@ -14,6 +15,8 @@ target_sources(LedDriverTest
       .
     FILES
       ./led_driver.h
+      ./runtime_error.h
+      ./runtime_error_stub.h
 )
 
 target_link_libraries(LedDriverTest
