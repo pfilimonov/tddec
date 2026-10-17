@@ -1,11 +1,13 @@
 #include "led_driver.h"
 #include "runtime_error.h"
 #include <stdbool.h>
+#include <stdint.h>
 
 static uint16_t *ledsAddress;
 static uint16_t ledsImage;
+static bool invertedLogic;
 
-enum { ALL_LEDS_ON = ~0, ALL_LEDS_OFF = ~ALL_LEDS_ON };
+enum { ALL_LEDS_ONE = ~0, ALL_LEDS_ZERO = ~ALL_LEDS_ONE };
 enum { FIRST_LED = 1, LAST_LED = 16 };
 
 static uint16_t convertLedNumberToBit(int ledNumber) {
@@ -19,15 +21,25 @@ static bool IsLedOutOfBounds(int ledNumber) {
 static void updateHardware(void) { *ledsAddress = ledsImage; }
 
 static void setLedImageBit(int ledNumber) {
-  ledsImage |= convertLedNumberToBit(ledNumber);
-}
-static void clearLedImageBit(int ledNumber) {
-  ledsImage &= ~(convertLedNumberToBit(ledNumber));
+  if (invertedLogic) {
+    ledsImage &= ~(convertLedNumberToBit(ledNumber));
+  } else {
+    ledsImage |= convertLedNumberToBit(ledNumber);
+  }
 }
 
-void LedDriver_Create(uint16_t *address) {
+static void clearLedImageBit(int ledNumber) {
+  if (invertedLogic) {
+    ledsImage |= convertLedNumberToBit(ledNumber);
+  } else {
+    ledsImage &= ~(convertLedNumberToBit(ledNumber));
+  }
+}
+
+void LedDriver_Create(uint16_t *address, bool inverted) {
+  invertedLogic = inverted;
   ledsAddress = address;
-  ledsImage = ALL_LEDS_OFF;
+  ledsImage = (uint16_t)(invertedLogic ? ALL_LEDS_ONE : ALL_LEDS_ZERO);
   updateHardware();
 }
 
@@ -49,7 +61,7 @@ void LedDriver_TurnOff(int ledNumber) {
 }
 
 void LedDriver_TurnAllOn(void) {
-  ledsImage = (uint16_t)ALL_LEDS_ON;
+  ledsImage = (uint16_t)(invertedLogic ? ALL_LEDS_ZERO : ALL_LEDS_ONE);
   updateHardware();
 }
 
@@ -57,16 +69,27 @@ bool LedDriver_IsOn(int ledNumber) {
   if (IsLedOutOfBounds(ledNumber)) {
     return false;
   }
-  return ledsImage & (convertLedNumberToBit(ledNumber));
+  bool cand = ledsImage & (convertLedNumberToBit(ledNumber));
+  if (invertedLogic) {
+    return !cand;
+  } else {
+    return cand;
+  }
 }
 
 bool LedDriver_IsOff(int ledNumber) {
   if (IsLedOutOfBounds(ledNumber)) {
     return true;
   }
-  return !(ledsImage & (convertLedNumberToBit(ledNumber)));
+  bool cand = ledsImage & (convertLedNumberToBit(ledNumber));
+  if (invertedLogic) {
+    return cand;
+  } else {
+    return !cand;
+  }
 }
+
 void LedDriver_TurnAllOff(void) {
-  ledsImage = (uint16_t)ALL_LEDS_OFF;
+  ledsImage = (uint16_t)(invertedLogic ? ALL_LEDS_ONE : ALL_LEDS_ZERO);
   updateHardware();
 }
